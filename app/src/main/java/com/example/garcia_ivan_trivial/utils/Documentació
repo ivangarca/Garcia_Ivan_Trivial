@@ -1,0 +1,25 @@
+PACKAGES
+    MODEL
+        Pregunta --> Tiene el enunciado, mapa conl las respuestas y en un int la respuesta correcta,
+            posterirmente tendrá un string de tematica
+        User --> Los juadres que juegan
+    UTILS
+        Documentacio --> EL texto explicando el codigo
+
+    VIEW
+        ScreenError --> Muestra mensaje de rror y boton para cerrar la app
+        ScreenLogin --> Dibuja la pantalla de inicio de sesión y registro.
+        Screen Welcome --> Si seh ace bien el login se muestra esta vista pasandole los dos jugadores y tiene el boton para jugar
+        View Connector --> Depende el estado se muestra una vista
+        ViewTrivial --> Vista para ugar, sale pregunta con sus respuestas
+
+    VIEWMODEL
+        LoginViewModel --> es el controlador de las vistas (sin contar la del trivial)
+        TrivialViewModel --> se encarga de validare las cosas para la vista ViewTrivialc
+
+
+Esta aplicaciñon tiene una lista de jugadores registrados y otro de los jugadores que han iniciado sesión
+En el momento que hay dos jugadores se abre la vista del Welcome y al darle al boton de jugar se ve la vista del Trivial
+
+Actualmente quien llega a dos puntos gana, pero el juego final sera quie macierte una pregunta de cada tematica (hanran 6)
+EMpieza jugando el jugadr uno y despues va el dos, asi sucesivamente
