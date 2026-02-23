@@ -37,7 +37,9 @@ class TrivialViewModel : ViewModel() {
             var nousPuntsP2 = estatActual.puntsP2 // puntos jugador 2
 
             if (esCorrecta) {
-                if (estatActual.esTornP1) nousPuntsP1++ else nousPuntsP2++ //si coincide sumo un punto mirando el boolean para saber qien juega
+                if (estatActual.esTornP1){
+                    nousPuntsP1++
+                } else nousPuntsP2++ //si coincide sumo un punto mirando el boolean para saber qien juega
             }
 
             if (nousPuntsP1 >= 2 || nousPuntsP2 >= 2) { // el que llegue a dos puntos gana
