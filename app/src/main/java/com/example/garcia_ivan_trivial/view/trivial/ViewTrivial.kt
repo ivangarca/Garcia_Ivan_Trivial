@@ -14,6 +14,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.garcia_ivan_trivial.viewModel.LoginUiState
 import com.example.garcia_ivan_trivial.viewModel.TrivialUiState
+import androidx.compose.ui.draw.shadow
+import androidx.compose.foundation.shape.CircleShape
 
 @Composable
 fun ViewTrivial(
@@ -60,7 +62,15 @@ fun ViewTrivial(
 
                     Button(
                         onClick = { onRespostaClick(id) },
-                        modifier = Modifier.fillMaxWidth(0.8f).padding(4.dp),
+                        modifier = Modifier
+                            .fillMaxWidth(0.8f)
+                            .padding(4.dp)
+                            .shadow(
+                                elevation = if (trivialState.mostrantResultat) 25.dp else 0.dp,
+                                shape = CircleShape,
+                                ambientColor = backgroundColor,
+                                spotColor = backgroundColor
+                            ),
                         colors = ButtonDefaults.buttonColors(containerColor = backgroundColor)
                     ) {
                         Text(text = texto, color = Color.White)
