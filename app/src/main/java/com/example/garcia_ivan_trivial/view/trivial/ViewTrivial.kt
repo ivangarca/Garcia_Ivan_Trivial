@@ -61,7 +61,6 @@ fun ViewTrivial(
                     Button(
                         onClick = { onRespostaClick(id) },
                         modifier = Modifier.fillMaxWidth(0.8f).padding(4.dp),
-                        // LE APLICAMOS EL COLOR AL BOTÓN
                         colors = ButtonDefaults.buttonColors(containerColor = backgroundColor)
                     ) {
                         Text(text = texto, color = Color.White)
