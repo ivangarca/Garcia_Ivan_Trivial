@@ -3,6 +3,7 @@ package com.example.garcia_ivan_trivial.view.trivial
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -43,12 +44,31 @@ fun ViewTrivial(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 trivialState.preguntaActual?.opcions?.forEach { (id, texto) ->
-                    Button(onClick = { onRespostaClick(id) }, modifier = Modifier.fillMaxWidth(0.8f).padding(4.dp)) {
-                        Text(text = texto)
+
+                    val seleccionada = trivialState.respostaSeleccionada
+                    val correcta = trivialState.preguntaActual.respostaCorrecta
+
+                    val backgroundColor = if (trivialState.mostrantResultat) {
+                        when (id) {
+                            seleccionada -> if (seleccionada == correcta) Color.Green else Color.Red
+                            correcta -> Color(0xFF81C784) // verde
+                            else -> Color.LightGray       // gris
+                        }
+                    } else {
+                        Color(0xFF6200EE) // lila
+                    }
+
+                    Button(
+                        onClick = { onRespostaClick(id) },
+                        modifier = Modifier.fillMaxWidth(0.8f).padding(4.dp),
+                        // LE APLICAMOS EL COLOR AL BOTÓN
+                        colors = ButtonDefaults.buttonColors(containerColor = backgroundColor)
+                    ) {
+                        Text(text = texto, color = Color.White)
                     }
                 }
             }
-        } else { // si el juego ha acabado muestre ese mensaje
+        }else {
             Text(text = "PARTIDA FINALITZADA", fontSize = 30.sp)
         }
 

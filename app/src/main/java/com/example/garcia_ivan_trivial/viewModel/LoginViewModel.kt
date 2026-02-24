@@ -28,7 +28,9 @@ data class LoginUiState(
     val player2: String = "",
     val player1Wins: Int = 0,
     val player2Wins: Int = 0,
-    val screenState: AppScreens = AppScreens.LOGIN
+    val screenState: AppScreens = AppScreens.LOGIN,
+    val respostaSeleccionada: Int? = null,
+    val mostrantResultat: Boolean = false
 )
 
 // sealed: només pot ser un objecte definit a la mateixa llibreria que LoginEvent.
