@@ -98,7 +98,7 @@ class TrivialViewModel(
         viewModelScope.launch {
             if (preguntaDao.getCount() == 0) {
                 // Asumo que 'llistaPreguntesHardcoded' está definida en otro lugar o en el DAO
-                // preguntaDao.insertAll(llistaPreguntesHardcoded)
+                 preguntaDao.insertAll(llistaPreguntesHardcoded)
             }
             llistaPreguntes = preguntaDao.getAllPreguntas().shuffled()
             if (llistaPreguntes.isNotEmpty()) {
