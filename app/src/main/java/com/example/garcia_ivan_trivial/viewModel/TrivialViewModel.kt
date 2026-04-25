@@ -52,7 +52,24 @@ class TrivialViewModel(
     private var audioManager: AudioManager? = null
     private var audioFocusRequest: AudioFocusRequest? = null
 
-    // Guardamos el momento exacto en el que se crea el ViewModel (empieza el juego)
+    // Escuchador universal de pérdida/recuperación de audio
+    private val focusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
+        when (focusChange) {
+            AudioManager.AUDIOFOCUS_LOSS,
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                // Si abren Spotify o hay una llamada, se pausa la música del juego
+                mediaPlayer?.pause()
+            }
+            AudioManager.AUDIOFOCUS_GAIN -> {
+                // Si la otra app se cierra y el juego NO estaba pausado, reanudamos
+                if (!_uiState.value.jocPausat) {
+                    mediaPlayer?.start()
+                }
+            }
+        }
+    }
+
     private var startTime = System.currentTimeMillis()
 
     init {
@@ -62,7 +79,6 @@ class TrivialViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        // Liberamos el foco de audio al destruir el ViewModel
         controlarMusicaFons(false)
         mediaPlayer?.release()
         mediaPlayer = null
@@ -97,8 +113,7 @@ class TrivialViewModel(
     private fun cargarJuego() {
         viewModelScope.launch {
             if (preguntaDao.getCount() == 0) {
-                // Asumo que 'llistaPreguntesHardcoded' está definida en otro lugar o en el DAO
-                 preguntaDao.insertAll(llistaPreguntesHardcoded)
+                preguntaDao.insertAll(llistaPreguntesHardcoded)
             }
             llistaPreguntes = preguntaDao.getAllPreguntas().shuffled()
             if (llistaPreguntes.isNotEmpty()) {
@@ -144,9 +159,7 @@ class TrivialViewModel(
                 }
             }
 
-            // --- COMPROBACIÓN DE FINAL DE PARTIDA ---
             if (nuevasTematicasP1.size >= 5 || nuevasTematicasP2.size >= 5) {
-
                 val segundosTotales = (System.currentTimeMillis() - startTime) / 1000
 
                 _uiState.value = estatActual.copy(
@@ -157,8 +170,6 @@ class TrivialViewModel(
                     mostrantResultat = false,
                     respostaSeleccionada = null
                 )
-
-                // Paramos la música al terminar
                 controlarMusicaFons(false)
 
             } else {
@@ -209,9 +220,10 @@ class TrivialViewModel(
         }
     }
 
-    // --- CONTROL DE MÚSICA CON AUDIO FOCUS ---
+    // --- CONTROL DE MÚSICA CON AUDIO FOCUS A PRUEBA DE BALAS ---
     fun controlarMusicaFons(play: Boolean) {
         if (play) {
+            val result: Int
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val playbackAttributes = AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_GAME)
@@ -221,43 +233,33 @@ class TrivialViewModel(
                 audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
                     .setAudioAttributes(playbackAttributes)
                     .setAcceptsDelayedFocusGain(true)
-                    .setOnAudioFocusChangeListener { focusChange ->
-                        when (focusChange) {
-                            // Si perdemos el foco (ej. llamada o abren Spotify), pausamos
-                            AudioManager.AUDIOFOCUS_LOSS,
-                            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
-                            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
-                                mediaPlayer?.pause()
-                            }
-                            // Si recuperamos el foco y el juego no está en pausa, reanudamos
-                            AudioManager.AUDIOFOCUS_GAIN -> {
-                                if (!_uiState.value.jocPausat) {
-                                    mediaPlayer?.start()
-                                }
-                            }
-                        }
-                    }
+                    .setOnAudioFocusChangeListener(focusChangeListener)
                     .build()
 
-                val res = audioManager?.requestAudioFocus(audioFocusRequest!!)
-                if (res == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-                    if (mediaPlayer?.isPlaying == false) {
-                        mediaPlayer?.start()
-                    }
-                }
+                result = audioManager?.requestAudioFocus(audioFocusRequest!!) ?: AudioManager.AUDIOFOCUS_REQUEST_FAILED
             } else {
-                // Compatibilidad con versiones más antiguas de Android
+                @Suppress("DEPRECATION")
+                result = audioManager?.requestAudioFocus(
+                    focusChangeListener,
+                    AudioManager.STREAM_MUSIC,
+                    AudioManager.AUDIOFOCUS_GAIN
+                ) ?: AudioManager.AUDIOFOCUS_REQUEST_FAILED
+            }
+
+            if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
                 if (mediaPlayer?.isPlaying == false) {
                     mediaPlayer?.start()
                 }
             }
         } else {
-            // Detenemos música y liberamos el foco
             if (mediaPlayer?.isPlaying == true) {
                 mediaPlayer?.pause()
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && audioFocusRequest != null) {
                 audioManager?.abandonAudioFocusRequest(audioFocusRequest!!)
+            } else {
+                @Suppress("DEPRECATION")
+                audioManager?.abandonAudioFocus(focusChangeListener)
             }
         }
     }
@@ -276,7 +278,6 @@ class TrivialViewModel(
         )
         controlarMusicaFons(true)
     }
-
 
     private val llistaPreguntesHardcoded = listOf(
         Pregunta(1, "¿En qué año acabo la primera guerra mundial?", mapOf(1 to "1947", 2 to "1953", 3 to "1943", 4 to "1918"), 4, Tematica.CULTURA_GENERAL),
