@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.garcia_ivan_trivial.dao.UserDao
 import com.example.garcia_ivan_trivial.model.User
+import com.example.garcia_ivan_trivial.model.RetrofitClient
 import com.example.garcia_ivan_trivial.repositori.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -28,7 +29,8 @@ data class LoginUiState(
     val player2Wins: Int = 0,
     val screenState: AppScreens = AppScreens.LOGIN,
     val respostaSeleccionada: Int? = null,
-    val mostrantResultat: Boolean = false
+    val mostrantResultat: Boolean = false,
+    val apiMessage: String = ""
 )
 
 sealed interface LoginEvent {
@@ -144,5 +146,37 @@ class LoginViewModel(private val userDao: UserDao) : ViewModel() {
 
     fun onStartTrivialClick() {
         _uiState.value = _uiState.value.copy(screenState = AppScreens.TRIVIAL)
+    }
+
+    fun onSettingsClick() {
+        _uiState.value = _uiState.value.copy(screenState = AppScreens.SETTINGS)
+    }
+
+    fun onTornarLoginClick() {
+        _uiState.value = _uiState.value.copy(
+            screenState = AppScreens.LOGIN,
+            apiMessage = "" // Limpiamos el mensaje al salir para que esté limpio la próxima vez
+        )
+    }
+
+    fun probarConexionApi() {
+        _uiState.value = _uiState.value.copy(
+            apiMessage = "Connectant amb el servidor..."
+        )
+
+        viewModelScope.launch {
+            try {
+                val respuesta = RetrofitClient.apiService.getInfo()
+
+                _uiState.value = _uiState.value.copy(
+                    apiMessage = "Dades rebudes: ${respuesta.mensaje}"
+                )
+
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    apiMessage = "❌ Error: No hi ha connexió a Internet."
+                )
+            }
+        }
     }
 }

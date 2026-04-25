@@ -22,7 +22,6 @@ fun ConnectorRoute(
     val context = LocalContext.current
     val db = AppDatabase.getDatabase(context)
     val userDao = db.userDao()
-    // -------------------------------------------------------------
 
     LaunchedEffect(Unit) {
         loginViewModel.eventFlow.collect { event ->
@@ -38,11 +37,11 @@ fun ConnectorRoute(
                 state = uiStateCompose.value,
                 onUsernameChange = loginViewModel::onUsernameChange,
                 onPasswordChange = loginViewModel::onPasswordChange,
-
                 onRegisterClick = { loginViewModel.onRegisterClick(userDao) },
                 onLoginClick = { loginViewModel.onLoginClick(userDao) },
-
-                onCloseClick = loginViewModel::onCloseClick
+                onCloseClick = loginViewModel::onCloseClick,
+                // Añadimos el "cable" para ir a Settings
+                onSettingsClick = loginViewModel::onSettingsClick
             )
         }
         AppScreens.WELCOME -> {
@@ -51,15 +50,7 @@ fun ConnectorRoute(
                 onPartidaClick = loginViewModel::onStartTrivialClick,
                 onCloseClick = loginViewModel::onCloseClick,
                 msgWelcome = "Hola ${uiStateCompose.value.player1} i hola ${uiStateCompose.value.player2}!!",
-                msgPartidesGuanyades = "Victòries -> ${uiStateCompose.value.player1}: ${uiStateCompose.value.player1Wins} | ${uiStateCompose.value.player2}: ${uiStateCompose.value.player2Wins}")
-        }
-        AppScreens.SETTINGS -> {
-            ScreenWelcome(
-                state = uiStateCompose.value,
-                onPartidaClick = loginViewModel::onLogoutClick,
-                onCloseClick = loginViewModel::onCloseClick,
-                msgWelcome = "Funcionalitat en construcció",
-                msgPartidesGuanyades = ""
+                msgPartidesGuanyades = "Victòries -> ${uiStateCompose.value.player1}: ${uiStateCompose.value.player1Wins} | ${uiStateCompose.value.player2}: ${uiStateCompose.value.player2Wins}"
             )
         }
         AppScreens.TRIVIAL -> {
@@ -70,6 +61,14 @@ fun ConnectorRoute(
                 onComodinClick = trivialViewModel::usarComodin5050,
                 onPauseApp = trivialViewModel::pausarJoc,
                 onResumeApp = trivialViewModel::reprendreJoc
+            )
+        }
+        AppScreens.SETTINGS -> {
+            // Esta es la única versión de SETTINGS que queda
+            ScreenSettings(
+                state = uiStateCompose.value,
+                onTestApiClick = loginViewModel::probarConexionApi,
+                onVolverClick = loginViewModel::onTornarLoginClick
             )
         }
         else -> {

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults // <-- Añadido para el color del botón
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,7 +28,8 @@ fun ScreenLogin(
     onPasswordChange: (String) -> Unit,
     onRegisterClick: () -> Unit,
     onLoginClick: () -> Unit,
-    onCloseClick: () -> Unit
+    onCloseClick: () -> Unit,
+    onSettingsClick: () -> Unit // <--- 1. AÑADE ESTO AQUÍ
 ){
     Column (
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -41,7 +43,9 @@ fun ScreenLogin(
 
         OutlinedTextField( value = state.username, onValueChange = onUsernameChange, label = { Text("User") })
         OutlinedTextField( value = state.password, onValueChange = onPasswordChange, label = { Text("Pass") })
+
         Spacer(modifier = Modifier.height(80.dp))
+
         Row {
             Button(onClick = onRegisterClick) { Text("Crear usuari") }
             Spacer(Modifier.width(8.dp))
@@ -49,6 +53,18 @@ fun ScreenLogin(
         }
 
         Button(onClick = onCloseClick) {Text("Tancar")}
+
+        Spacer(modifier = Modifier.height(24.dp)) // Un poco de espacio
+
+        // <--- 2. AÑADE EL BOTÓN DE CONFIGURACIÓN AQUÍ
+        Button(
+            onClick = { onSettingsClick() },
+            colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
+        ) {
+            Text("⚙️ Configuració i API")
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
 
         Text(
             text = state.errorMsg,
