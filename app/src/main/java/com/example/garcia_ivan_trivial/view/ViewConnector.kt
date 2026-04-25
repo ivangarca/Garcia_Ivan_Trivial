@@ -3,6 +3,8 @@ package com.example.garcia_ivan_trivial.view
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
+import com.example.garcia_ivan_trivial.dao.AppDatabase
 import com.example.garcia_ivan_trivial.viewModel.AppScreens
 import com.example.garcia_ivan_trivial.viewModel.LoginEvent
 import com.example.garcia_ivan_trivial.viewModel.LoginViewModel
@@ -12,11 +14,15 @@ import com.example.garcia_ivan_trivial.viewModel.TrivialViewModel
 fun ConnectorRoute(
     onCloseApp: () -> Unit,
     loginViewModel: LoginViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
-    // 2. AÑADE ESTE PARÁMETRO
     trivialViewModel: TrivialViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ){
     val uiStateCompose = loginViewModel.uiState.collectAsState()
     val trivialState = trivialViewModel.uiState.collectAsState()
+
+    val context = LocalContext.current
+    val db = AppDatabase.getDatabase(context)
+    val userDao = db.userDao()
+    // -------------------------------------------------------------
 
     LaunchedEffect(Unit) {
         loginViewModel.eventFlow.collect { event ->
@@ -32,8 +38,10 @@ fun ConnectorRoute(
                 state = uiStateCompose.value,
                 onUsernameChange = loginViewModel::onUsernameChange,
                 onPasswordChange = loginViewModel::onPasswordChange,
-                onRegisterClick = loginViewModel::onRegisterClick,
-                onLoginClick = loginViewModel::onLoginClick,
+
+                onRegisterClick = { loginViewModel.onRegisterClick(userDao) },
+                onLoginClick = { loginViewModel.onLoginClick(userDao) },
+
                 onCloseClick = loginViewModel::onCloseClick
             )
         }
@@ -58,7 +66,10 @@ fun ConnectorRoute(
             com.example.garcia_ivan_trivial.view.trivial.ViewTrivial(
                 loginState = uiStateCompose.value,
                 trivialState = trivialState.value,
-                onRespostaClick = trivialViewModel::comprovarResposta
+                onRespostaClick = trivialViewModel::comprovarResposta,
+                onComodinClick = trivialViewModel::usarComodin5050,
+                onPauseApp = trivialViewModel::pausarJoc,
+                onResumeApp = trivialViewModel::reprendreJoc
             )
         }
         else -> {
